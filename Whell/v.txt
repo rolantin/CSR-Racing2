@@ -1,0 +1,61 @@
+#version 300 es
+
+uniform     vec3 _WorldSpaceCameraPos;
+uniform     vec4 hlslcc_mtx4x4unity_MatrixVP[4];
+uniform     vec4 hlslcc_mtx4x4_bones[16];
+in highp vec4 in_POSITION0;
+in highp vec3 in_NORMAL0;
+in highp vec4 in_TANGENT0;
+in highp vec2 in_TEXCOORD0;
+in highp vec4 in_COLOR0;
+out highp vec3 vs_TEXCOORD0;
+out highp vec2 vs_TEXCOORD1;
+out highp float vs_TEXCOORD5;
+out highp vec3 vs_TEXCOORD2;
+out highp vec3 vs_TEXCOORD3;
+out highp vec3 vs_TEXCOORD4;
+float u_xlat0;
+int u_xlati0;
+vec4 u_xlat1;
+vec4 u_xlat2;
+vec3 u_xlat3;
+void main()
+{
+    u_xlat0 = in_COLOR0.w * 255.0 + 0.100000001;
+    u_xlat0 = floor(u_xlat0);
+    u_xlati0 = int(u_xlat0);
+    u_xlati0 = u_xlati0 << 2;
+    u_xlat1 = in_POSITION0.yyyy * hlslcc_mtx4x4_bones[u_xlati0 + 1];
+    u_xlat1 = hlslcc_mtx4x4_bones[u_xlati0] * in_POSITION0.xxxx + u_xlat1;
+    u_xlat1 = hlslcc_mtx4x4_bones[u_xlati0 + 2] * in_POSITION0.zzzz + u_xlat1;
+    u_xlat1 = u_xlat1 + hlslcc_mtx4x4_bones[u_xlati0 + 3];
+    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
+    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
+    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
+    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
+    vs_TEXCOORD0.xyz = (-u_xlat1.xyz) + _WorldSpaceCameraPos.xyz;
+    vs_TEXCOORD1.xy = in_TEXCOORD0.xy;
+    vs_TEXCOORD5 = in_COLOR0.x;
+    u_xlat3.xyz = in_NORMAL0.zxy * in_TANGENT0.yzx;
+    u_xlat3.xyz = in_NORMAL0.yzx * in_TANGENT0.zxy + (-u_xlat3.xyz);
+    u_xlat3.xyz = u_xlat3.xyz * in_TANGENT0.www;
+    u_xlat1.xyz = u_xlat3.yyy * hlslcc_mtx4x4_bones[u_xlati0 + 1].xyz;
+    u_xlat1.xyz = hlslcc_mtx4x4_bones[u_xlati0].xyz * u_xlat3.xxx + u_xlat1.xyz;
+    u_xlat3.xyz = hlslcc_mtx4x4_bones[u_xlati0 + 2].xyz * u_xlat3.zzz + u_xlat1.xyz;
+    vs_TEXCOORD2.y = u_xlat3.x;
+    u_xlat1.xyz = in_TANGENT0.yyy * hlslcc_mtx4x4_bones[u_xlati0 + 1].xyz;
+    u_xlat1.xyz = hlslcc_mtx4x4_bones[u_xlati0].xyz * in_TANGENT0.xxx + u_xlat1.xyz;
+    u_xlat1.xyz = hlslcc_mtx4x4_bones[u_xlati0 + 2].xyz * in_TANGENT0.zzz + u_xlat1.xyz;
+    vs_TEXCOORD2.x = u_xlat1.x;
+    u_xlat2.xyz = in_NORMAL0.yyy * hlslcc_mtx4x4_bones[u_xlati0 + 1].xyz;
+    u_xlat2.xyz = hlslcc_mtx4x4_bones[u_xlati0].xyz * in_NORMAL0.xxx + u_xlat2.xyz;
+    u_xlat2.xyz = hlslcc_mtx4x4_bones[u_xlati0 + 2].xyz * in_NORMAL0.zzz + u_xlat2.xyz;
+    vs_TEXCOORD2.z = u_xlat2.x;
+    vs_TEXCOORD3.y = u_xlat3.y;
+    vs_TEXCOORD4.y = u_xlat3.z;
+    vs_TEXCOORD3.x = u_xlat1.y;
+    vs_TEXCOORD4.x = u_xlat1.z;
+    vs_TEXCOORD3.z = u_xlat2.y;
+    vs_TEXCOORD4.z = u_xlat2.z;
+    return;
+}
