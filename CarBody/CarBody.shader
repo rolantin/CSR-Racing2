@@ -74,17 +74,19 @@
 			v2f vert (appdata v)
 			{
 				v2f o;
-				float realview;
+				float viewdir;
 				int u_xlati0;
 				float4 u_xlat1;
 				float4 finalr;
 				float3 u_xlat3;
 
 				o.vertex = UnityObjectToClipPos(v.vertex);
+
+				float3 PosWorld = mul(unity_ObjectToWorld,v.vertex);
 			
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				
-				o.vs_TEXCOORD0 = _WorldSpaceCameraPos - o.vertex; ///view
+				o.vs_TEXCOORD0 = _WorldSpaceCameraPos - PosWorld; ///view
 				o.vs_TEXCOORD1 = UnityObjectToWorldNormal(v.normal); //normal
 				o.vs_TEXCOORD2 = v.color ;
 				o.vs_TEXCOORD3 = v.uv * _kLiveryUVScale;   //uv
@@ -124,50 +126,41 @@
 				float u_xlat16_22;
 				float finalr3;
 
-				float3 realview;
-						float4 realnormal;
-
-				realview.x = dot(viewDir, viewDir);
-				realview.x = rsqrt(realview.x);
-
-				realview.xyz = realview.x * viewDir;
+				
+				
 
 
 
+				//viewdir.x = dot(viewDir, viewDir);
+				//viewdir.x = rsqrt(viewdir.x);
+				//viewdir.xyz = viewdir.x * viewDir;
+			    float3 viewdir = normalize(viewDir);
 
+			    //_normal = dot(NomalDir, NomalDir);
+				//_normal = rsqrt(_normal);
+				//normaldir.xyz = float3(_normal.xxx) * NomalDir;
+				float4 normaldir; 
+				normaldir.xyz = normalize(NomalDir);
 
-				_normal = dot(NomalDir, NomalDir);
-
-				_normal = rsqrt(_normal);
-
-				realnormal.xyz = float3(_normal.xxx) * NomalDir;
-
-
-
-
-
-
-				_normal = dot((-realview.xyz), realnormal.xyz);
-
+///calcular Reflect
+				_normal = dot(-viewdir, normaldir.xyz);
 				_normal = _normal + _normal;
 
-
-
-				finalr.xyz = realnormal.xyz *(-float3(_normal.xxx)) + (-realview.xyz);
+				finalr.xyz = normaldir.xyz *(-float3(_normal.xxx)) + (-viewdir);
 
 
 
-				realview.x = dot(realnormal.xyz, realview.xyz);
+				viewdir.x = dot(normaldir.xyz, viewdir);
 
 				#ifdef UNITY_ADRENO_ES3
-				realview.x = min(max(realview.x, 0.0), 1.0);
+				viewdir.x = min(max(viewdir.x, 0.0), 1.0);
 				#else
-				realview.x = clamp(realview.x, 0.0, 1.0);
+				viewdir.x = clamp(viewdir.x, 0.0, 1.0);
 				#endif
-				u_xlat10_7.xyz = texCUBE(_DiffAmbientMap, realnormal.xyz).xyz;
+				u_xlat10_7.xyz = texCUBE(_DiffAmbientMap, normaldir.xyz).xyz;
 				u_xlat10_1 = texCUBE(_DiffAmbientMap, finalr.xyz).w;
 				u_xlat16_8 = u_xlat10_1 * 15.9375;
-				realnormal.x = (-u_xlat10_1)  * _gkAliasDimming + 1.0;
+				normaldir.x = (-u_xlat10_1)  * _gkAliasDimming + 1.0;
 				u_xlat3.xyz = float3((-float(_kClearCoatF0)) + float(1.0), (-float(_kClearCoatShininess)) + float(1.0), (-float(_kMetallicShininess)) + float(1.0));
 				u_xlat15.xy = float2(u_xlat3.y * float(6.0), u_xlat3.z * float(6.0));
 				u_xlat15.xy = max(float2(u_xlat16_8,u_xlat16_8), u_xlat15.xy);
@@ -175,7 +168,7 @@
 				u_xlat10_4 = texCUBElod(_SpecAmbientMap, float4(finalr.xyz, u_xlat15.y));
 				u_xlat10_5 = texCUBElod(_SpecAmbientMap, float4(finalr.xyz, u_xlat15.x));
 
-				u_xlat15.x = log2(realview.x);
+				u_xlat15.x = log2(viewdir.x);
 				u_xlat15.x = u_xlat15.x * _kFresnelPower;
 				u_xlat15.x = exp2(u_xlat15.x);
 				finalr2 = u_xlat15.x * _kMetallicCoverage + -0.25;
@@ -230,7 +223,7 @@
 				u_xlat4.xyz = finalr2 * u_xlat10_5.xyz;
 				u_xlat3.xyz = u_xlat4.xyz * u_xlat15.xxx + u_xlat10.xyz;
 				u_xlat15.x = (-u_xlat15.x) + 1.0;
-				u_xlat3.xyz = realnormal.xxx * u_xlat3.xyz;
+				u_xlat3.xyz = normaldir.xxx * u_xlat3.xyz;
 				u_xlat4.xyz = u_xlat10_7.xyz * _kDiffuseTint.xyz;
 				u_xlat3.xyz = u_xlat4.xyz * u_xlat15.xxx + u_xlat3.xyz;
 				u_xlat10_4.xyz = tex2D(_AuxTex1, uv).xyz;
@@ -238,15 +231,15 @@
 				u_xlat16_22 = u_xlat16_15.y * 6.0;
 				u_xlat8 = max(u_xlat16_8, u_xlat16_22);
 				u_xlat10_2 = texCUBElod(_SpecAmbientMap, float4(finalr.xyz, u_xlat8) );
-				u_xlat8 = realview.x * -5.55472994 + -6.98316002;
-				realview.x = realview.x * u_xlat8;
-				realview.x = exp2(realview.x);
-				realview.x = realview.x * u_xlat16_15.x;
+				u_xlat8 = viewdir.x * -5.55472994 + -6.98316002;
+				viewdir.x = viewdir.x * u_xlat8;
+				viewdir.x = exp2(viewdir.x);
+				viewdir.x = viewdir.x * u_xlat16_15.x;
 				u_xlat16_8 = (-u_xlat10_4.y) * 3.0 + 4.0;
-				realview.x = realview.x * u_xlat16_8;
-				realview.x = realview.x + u_xlat10_4.x;
+				viewdir.x = viewdir.x * u_xlat16_8;
+				viewdir.x = viewdir.x + u_xlat10_4.x;
 				u_xlat8 = u_xlat10_4.z * VertexColor.y;
-				u_xlat15.x = realview.x + -0.25;
+				u_xlat15.x = viewdir.x + -0.25;
 				#ifdef UNITY_ADRENO_ES3
 				u_xlat15.x = min(max(u_xlat15.x, 0.0), 1.0);
 				#else
@@ -258,21 +251,21 @@
 				u_xlat15.x = finalr2 * 6.0 + u_xlat15.x;
 				u_xlat15.x = u_xlat15.x + -0.25;
 				finalr2 = (-u_xlat15.x) + 1.0;
-				u_xlat15.x = realview.x * finalr2 + u_xlat15.x;
+				u_xlat15.x = viewdir.x * finalr2 + u_xlat15.x;
 				u_xlat15.x = max(u_xlat15.x, 0.0);
 				finalr.xyz = u_xlat15.xxx * u_xlat10_2.xyz;
-				finalr.xyz = realview.xxx * finalr.xyz;
-				realview.x = (-realview.x) + 1.0;
-				realnormal.xzw = realnormal.xxx*  finalr.xyz;
+				finalr.xyz = viewdir.xxx * finalr.xyz;
+				viewdir.x = (-viewdir.x) + 1.0;
+				normaldir.xzw = normaldir.xxx*  finalr.xyz;
 				u_xlat10_2.xyz = tex2D(_MainTex, uv).xyz;
 				u_xlat16_7.xyz = u_xlat10_7.xyz * u_xlat10_2.xyz;
-				realview.xyz = u_xlat16_7.xyz * realview.xxx + realnormal.xzw;
-				realview.xyz = (-u_xlat3.xyz) + realview.xyz;
-				realview.xyz = u_xlat8 * realview.xyz + u_xlat3.xyz;
+				viewdir.xyz = u_xlat16_7.xyz * viewdir.xxx + normaldir.xzw;
+				viewdir.xyz = (-u_xlat3.xyz) + viewdir.xyz;
+				viewdir.xyz = u_xlat8 * viewdir.xyz + u_xlat3.xyz;
 				float3 light = DirectionalLight(i.vs_TEXCOORD1)[0];
 				float4 SV_Target0;
 				_normal = VertexColor.x * _gkVehicleExposure.xxxy.z;
-				SV_Target0.xyz = _normal * realview.xyz ;
+				SV_Target0.xyz = _normal * viewdir.xyz ;
 				SV_Target0.w = 1.0;
 
 			
