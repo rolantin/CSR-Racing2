@@ -15,11 +15,16 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="transparent" }
+		Tags { "RenderType"="Transparent" "Queue"="Transparent"}
 		LOD 100
+		//Cull Off
+		Blend SrcAlpha OneMinusSrcAlpha
+		//ColorMask RGB
+
 
 		Pass
-		{
+		{   
+
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -52,6 +57,7 @@
 				float3 vs_TEXCOORD2:TEXCOORD2;
 			
 			   float3 vs_TEXCOORD0:TEXCOORD3;
+
 				float4 posWorld:TEXCOORD1;
 
 			};
@@ -72,13 +78,9 @@
 				float4 color = v.color.w * 255.0 + 0.100000001;
 
 				 o.vs_TEXCOORD2 = UnityObjectToWorldNormal(v.normal);
+			     o.vs_TEXCOORD1 =v.uv;
 
-			    o.vs_TEXCOORD1 = v.uv;
-
-			     o.pos = UnityObjectToClipPos( v.vertex );
-
-			    
-				
+			     o.pos = UnityObjectToClipPos( v.vertex );			  				
 				return o;
 			}
 			
@@ -86,60 +88,59 @@
 			{
 				float2 uv = i.vs_TEXCOORD1;
 				float3 ViewDirection = i.vs_TEXCOORD0;
-				float3 normaldir = i.vs_TEXCOORD2;11
+				float3 normaldir = i.vs_TEXCOORD2;
 
 				
 				
-
-				float3 u_xlat0 ;
-				float3 u_xlat1;
 			
-				float u_xlat2;
+			
+			
 				
-				 float3 u_xlat16_3;
+	
 				float3 u_xlat4;
 			
 				float3 u_xlat6;
 				float u_xlat8;
-				 float u_xlat16_8;
+				
 				
 				 float u_xlat16_9;
 				float u_xlat12;
-				float u_xlat18;
-				float u_xlat19;
-				float u_xlat20;
+				
+				
+				
+				float3 u_xlat0 ;
 			
 				u_xlat0.x = dot(ViewDirection.xyz, ViewDirection.xyz);
 				u_xlat0.x = rsqrt(u_xlat0.x);
 			    u_xlat0.xyz = u_xlat0.x * ViewDirection.xyz;
 
+///normal dir
 
-
-			    u_xlat18 = dot(normaldir, normaldir);
-			    u_xlat18 = rsqrt(u_xlat18);
-			    u_xlat1.xyz = float3(u_xlat18.xxx) * normaldir.xyz;
-			    u_xlat18 = dot(u_xlat1.xyz, u_xlat0.xyz);
+			    float NorDir = dot(normaldir, normaldir);
+			    NorDir = rsqrt(NorDir);
+			    float3 u_xlat1 = NorDir.x* normaldir.xyz;
+			    NorDir = dot(u_xlat1.xyz, u_xlat0.xyz);
 
 
 			#ifdef UNITY_ADRENO_ES3
-			    u_xlat18 = min(max(u_xlat18, 0.0), 1.0);
+			    NorDir = min(max(NorDir, 0.0), 1.0);
 			#else
-			    u_xlat18 = clamp(u_xlat18, 0.0, 1.0);
+			    NorDir = clamp(NorDir, 0.0, 1.0);
 			#endif
-			    u_xlat19 = u_xlat18 * -5.55472994 + -6.98316002;
-			    u_xlat18 = u_xlat18 * u_xlat19;
-			    u_xlat18 = exp2(u_xlat18);
+
+			   float u_xlat19 = NorDir * -5.55472994 + -6.98316002;
+
+			    NorDir = NorDir * u_xlat19;
+			    NorDir = exp2(NorDir);
 
 
 			   float3 _AuxTex2_var = tex2D(_AuxTex2, uv).xyz;
+			   float3  AuxTex2_V = (1-_AuxTex2_var);
 
-
-			    u_xlat16_3.xyz = (-_AuxTex2_var) + float3(1.0, 1.0, 1.0);
-			    u_xlat19 = u_xlat18 * u_xlat16_3.x;
-			    u_xlat16_8 = (-_AuxTex2_var.y) * 3.0 + 4.0;
-			    u_xlat19 = u_xlat19 / u_xlat16_8;
+			    u_xlat19 = NorDir * AuxTex2_V.x;			
+			    u_xlat19 = u_xlat19 / ((-_AuxTex2_var.y) * 3.0 + 4.0);
 			    u_xlat19 = u_xlat19 + _AuxTex2_var.x;
-			    u_xlat2 = u_xlat19 + -0.25;
+			   float u_xlat2 = u_xlat19 + -0.25;
 
 
 
@@ -150,7 +151,7 @@
 			#endif
 			    u_xlat8 = (-u_xlat2) * 1.33333302 + 1.0;
 			    u_xlat2 = u_xlat2 * 1.33333302;
-			    u_xlat20 = dot((-u_xlat0.xyz), u_xlat1.xyz);
+			  float  u_xlat20 = dot((-u_xlat0.xyz), u_xlat1.xyz);
 			    u_xlat20 = u_xlat20 + u_xlat20;
 
 
@@ -161,14 +162,14 @@
 			    float4 IBL = texCUBE(_DiffAmbientMap, normaldir);
 			    float IBL2 = texCUBE(_DiffAmbientMap, u_xlat0.xyz).w;
 
-			    u_xlat16_3.x = IBL2 * 15.9375;
+			    AuxTex2_V.x = IBL2 * 15.9375;
 			    u_xlat20 = (-IBL2) * _gkAliasDimming + 1.0;
-			    u_xlat16_9 = u_xlat16_3.y * 6.0;
-			    float SPLBias = max(u_xlat16_3.x, u_xlat16_9);
+			    u_xlat16_9 = AuxTex2_V.y * 6.0;
+			    float SPLBias = max(AuxTex2_V.x, u_xlat16_9);
 			   // float4 SPL = texCUBElod(_SpecAmbientMap,float4(u_xlat0.xyz, SPLBias) );
-			        float4 SPL = texCUBElod(_SpecAmbientMap,float4(u_xlat0.xyz, 0) );
+			     float4 SPL = texCUBElod(_SpecAmbientMap,float4(u_xlat0.xyz, 0) );
 			
- return SPL;
+
 			    u_xlat8 = u_xlat8 * SPL.w;
 			    u_xlat2 = u_xlat8 * 6.0 + u_xlat2;
 			    u_xlat2 = u_xlat2 + -0.25;
@@ -183,13 +184,15 @@
 			    float3 IBLMask = IBL * AuxMap;
 			    u_xlat1.xyz = IBLMask * float3(u_xlat19.xxx) + u_xlat4.xyz;
 			    u_xlat1.xyz = _AuxTex2_var.zzz * u_xlat1.xyz;
+
 			    u_xlat19 = (-_kShininess) + 1.0;
 			    u_xlat19 = u_xlat19 * 6.0;
-			    u_xlat19 = max(u_xlat16_3.x, u_xlat19);
-			    SPL = texCUBElod(_SpecAmbientMap, float4 (u_xlat0.xyz, u_xlat19));
+			    u_xlat19 = max(AuxTex2_V.x, u_xlat19);
+
+			    SPL = texCUBElod(_SpecAmbientMap, float4 (u_xlat0.xyz, 0));
 			       
 			    u_xlat0.x = (-_kf0) + 1.0;
-			    u_xlat0.x = u_xlat0.x * u_xlat18 + _kf0;
+			    u_xlat0.x = u_xlat0.x * NorDir + _kf0;
 			    u_xlat6.x = u_xlat0.x + -0.25;
 
 
@@ -205,13 +208,15 @@
 			    u_xlat6.x = u_xlat6.x + -0.25;
 			    u_xlat12 = (-u_xlat6.x) + 1.0;
 			    u_xlat6.x = u_xlat0.x * u_xlat12 + u_xlat6.x;
-			    u_xlat0.x = u_xlat0.x * u_xlat16_3.z;
+			    u_xlat0.x = u_xlat0.x * AuxTex2_V.z;
 			    u_xlat6.x = max(u_xlat6.x, 0.0);
 			    u_xlat6.xyz = u_xlat6.xxx * SPL.xyz;
 			    u_xlat19 = u_xlat20 * u_xlat0.x;
 
 			    float4 SV_Target0;
+
 			    SV_Target0.w = u_xlat0.x * u_xlat20 + _AuxTex2_var.z;
+
 			    u_xlat0.xyz = u_xlat6.xyz * float3(u_xlat19.xxx) + u_xlat1.xyz;
 			    SV_Target0.xyz = u_xlat0.xyz * float3(_gkVehicleExposure.x, _gkVehicleExposure.x, _gkVehicleExposure.x);
 			   

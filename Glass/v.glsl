@@ -35,6 +35,7 @@ void main()
     vs_TEXCOORD0.xyz = (-u_xlat1.xyz) + _WorldSpaceCameraPos.xyz;
 
     vs_TEXCOORD1.xy = in_TEXCOORD0.xy;
+    
     u_xlat3.xyz = in_NORMAL0.yyy * hlslcc_mtx4x4_bones[u_xlati0 + 1].xyz;
     u_xlat3.xyz = hlslcc_mtx4x4_bones[u_xlati0].xyz * in_NORMAL0.xxx + u_xlat3.xyz;
     vs_TEXCOORD2.xyz = hlslcc_mtx4x4_bones[u_xlati0 + 2].xyz * in_NORMAL0.zzz + u_xlat3.xyz;

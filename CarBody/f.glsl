@@ -16,11 +16,15 @@ uniform lowp sampler2D _AuxTex1;
 uniform lowp sampler2D _MainTex;
 uniform lowp samplerCube _DiffAmbientMap;
 uniform lowp samplerCube _SpecAmbientMap;
+
 in highp vec3 vs_TEXCOORD0;
 in highp vec3 vs_TEXCOORD1;
 in highp vec2 vs_TEXCOORD2;
 in highp vec2 vs_TEXCOORD3;
 layout(location = 0) out highp vec4 SV_Target0;
+
+
+
 vec3 u_xlat0;
 vec4 u_xlat1;
 lowp float u_xlat10_1;
