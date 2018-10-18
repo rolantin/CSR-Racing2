@@ -12,8 +12,8 @@
 
 		_kClearCoatF0 ("_kClearCoatF0", FLOAT) = 1
 		_kClearCoatShininess ("_kClearCoatShininess", FLOAT) = 1
-		_kFresnelPower ("_kFresnelPower", FLOAT) = 1
-		_kMetallicBoost ("_kMetallicBoost", FLOAT) = 1
+		_kFresnelPower ("_kFresnelPower", Range(0,1)) = 1
+		_kMetallicBoost ("_kMetallicBoost",Range(0,1)) = 1
 		_kLiveryUVScale ("_kLiveryUVScale", FLOAT) = 1
 		_kMetallicShininess ("_kMetallicShininess", FLOAT) = 1
 
@@ -143,7 +143,7 @@
    float n2 = vdn + vdn;
    float3 viewdirx = normalx * (-(n2)) + (-viewdir);
 
-    u_xlat0.x = dot(normalx, viewdirx);
+  //  u_xlat0.x = dot(normalx, viewdirx);
 //#ifdef UNITY_ADRENO_ES3
   //  u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
 //#else
@@ -152,7 +152,7 @@
    float3 IBL = texCUBE(_DiffAmbientMap, normalx);
 
   float  IBLw = texCUBE(_DiffAmbientMap, viewdirx.xyz).w;
-  
+
    float IBLW  = IBLw * 15.9375;
 
     float3 kAliasDimming = (-IBLw) * _gkAliasDimming + 1.0;
@@ -171,11 +171,13 @@
 
     u_xlat10_5 = texCUBElod(_SpecAmbientMap,float4(viewdirx.xyz, u_xlat15.x)) ;
 
-    ClearCoatShininess = log2(u_xlat0.x);
+    float nfe = log2(dot(normalx, viewdirx));
 
-    ClearCoatShininess = ClearCoatShininess * - _kFresnelPower;
+   // ClearCoatShininess = log2(dot(normalx, viewdirx));
 
-    ClearCoatShininess = exp2(ClearCoatShininess);
+    nfe = nfe * - _kFresnelPower;
+
+    nfe = exp2(nfe);
 
     //kMetallicCoverage = (u_xlat15.x * _kMetallicCoverage + -0.25) * 1.33333302;
   // u_xlat23 = (-kMetallicCoverage) * 1.33333302 + 1.0;
@@ -228,29 +230,16 @@
 
     float3 CarColor =  IBL.xyz * _kDiffuseTint;
 
-    float vv =  ClearCoatShininess + _kClearCoatF0;
+    float vv =  nfe + _kClearCoatF0;
 
-
-
-    float3 FIBL =  CarColor * vv + ( CarColor * (-ClearCoatShininess) + 1.0 + ( vv * _kMetallicCoverage * _kMetallicBoost *_kMetallicTint ) * CarColor * kAliasDimming);
-
-
+    float3 FIBL =  CarColor * vv + ( CarColor * (-ClearCoatShininess) + 1.0 + ( vv * _kMetallicCoverage * _kMetallicBoost  ) * CarColor * kAliasDimming);
      //u_xlat3.xyz = DiffuseIBLColor.xyz * ( ClearCoatShininess + _kClearCoatF0) ;
-
-
     float3 AuxTex_Var =  tex2D(_AuxTex1, uv);
-
    // u_xlat10_4.xyz = tex2D(_AuxTex1, uv).xyz;
-
    // u_xlat16_15.xy = (-AuxTex_Var.xy) + float2(1.0, 1.0);
-
-  //  u_xlat16_22 = (-AuxTex_Var.y+1) * 6.0;
-
-
-
+   // u_xlat16_22 = (-AuxTex_Var.y+1) * 6.0;
    // u_xlat8 = max(IBLw, ((-AuxTex_Var.y+1) * 6.0));
-
-   float4 spl = texCUBElod(_SpecAmbientMap, float4(viewdirx.xyz,  AuxTex_Var.y *_kMetallicShininess * 6 ));
+   float4 spl = texCUBElod(_SpecAmbientMap , float4(viewdirx.xyz,  AuxTex_Var.y *_kMetallicShininess * 6 )) ;
 
    // u_xlat8 = u_xlat0.x * -5.55472994 + -6.98316002;
 
@@ -266,56 +255,55 @@
 
     //u_xlat0.x = u_xlat0.x + AuxTex_Var.x;
 
-
-
    // u_xlat8 = AuxTex_Var.z * VertexColor.y;
 
     //ClearCoatShininess = u_xlat0.x + -0.25;
-
-   float tem  = u_xlat0.x + -0.25;
-
-
 
 //#ifdef UNITY_ADRENO_ES3
  //   ClearCoatShininess = min(max(ClearCoatShininess, 0.0), 1.0);
 //#else
 
-    float ssd =  clamp(tem, 0.0, 1.0);
+  //  float ssd =  clamp( ClearCoatShininess -0.25, 0.0, 1.0);
   //  ClearCoatShininess =;
 //#endif
 
-    kMetallicCoverage = (-ssd) * 1.33333302 + 1.0;
-    ssd  = ssd * 1.33333302;
+  //  kMetallicCoverage = (-ssd) * 1.33333302 + 1.0;
+  //  ssd  = ssd * 1.33333302;
 
 
-    kMetallicCoverage = spl.w * kMetallicCoverage ;
+  //  kMetallicCoverage = spl.w * kMetallicCoverage ;
 
-   ssd = (kMetallicCoverage * 6.0 + ssd)  + -0.25;
+ //  ssd = (kMetallicCoverage * 6.0 + ssd)  -0.25;
   
-    kMetallicCoverage = (-ssd) + 1.0;
+  //  kMetallicCoverage = (-ssd) + 1.0;
 
 
-    ssd = u_xlat0.x + AuxTex_Var.x * kMetallicCoverage + ssd;
-
-   ssd = max(ssd, 0.0);
+  //  ssd = ClearCoatShininess+  AuxTex_Var.x * kMetallicCoverage + ssd;
+//
+  // ssd = max(ssd, 0.0);
 
 
 			// float3 todo
-			float3 splpower = ssd * spl.xyz;
+			//float3 splpower = ssd * spl.xyz *_kMetallicTint;
+   float3 splpower =  spl.xyz * _kMetallicTint ;
 
-			splpower = u_xlat0.x * splpower;
+			splpower = -ClearCoatShininess * splpower;
 
 
-			u_xlat0.x = (-u_xlat0.x) + 1.0;
+			//u_xlat0.x = (-u_xlat0.x) + 1.0;
 
-			float3 kAliasDimmingPower =  kAliasDimming * splpower;
+			float3 Fresnel =  kAliasDimming * splpower;
 			// u_xlat1.xzw = kAliasDimming * splpower;
 
 			float3 Maintex_Var = tex2D(_MainTex, uv).xyz;
 			float3 finaldiffuse = IBL.xyz * Maintex_Var;
 
-			u_xlat0.xyz = finaldiffuse* (u_xlat0.x)+ kAliasDimmingPower;
-			u_xlat0.xyz = (-FIBL) + u_xlat0.xyz;
+			u_xlat0.xyz = finaldiffuse* nfe + Fresnel;
+
+//return float4(Fresnel,1);
+			//u_xlat0.xyz = (-FIBL) + u_xlat0.xyz;
+
+
 			u_xlat0.xyz = (AuxTex_Var.z * VertexColor.g) * u_xlat0.xyz + FIBL;
 
 			float v_colorR = VertexColor.r * _gkVehicleExposure;
