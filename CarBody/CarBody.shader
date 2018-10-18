@@ -6,18 +6,18 @@
 		_MainTex ("_MainTex", 2D) = "white" {}
 		_DiffAmbientMap ("_DiffAmbientMap", CUBE) = "sky" {}
 		_SpecAmbientMap ("_SpecAmbientMap", CUBE) = "sky" {}
-		_gkAliasDimming ("_gkAliasDimming", FLOAT) = 1
+		_gkAliasDimming ("_gkAliasDimming", Range(0,1)) = 1
 
 		_kMetallicCoverage ("_kMetallicCoverage", Range(0,1)) = 1
 
-		_kClearCoatF0 ("_kClearCoatF0", FLOAT) = 1
+		_kClearCoatF0 ("_kClearCoatF0", Range(1,1)) = 1
 		_kClearCoatShininess ("_kClearCoatShininess", FLOAT) = 1
-		_kFresnelPower ("_kFresnelPower", Range(0,1)) = 1
+		_kFresnelPower ("_kFresnelPower", Range(0,3)) = 1
 		_kMetallicBoost ("_kMetallicBoost",Range(0,1)) = 1
 		_kLiveryUVScale ("_kLiveryUVScale", FLOAT) = 1
-		_kMetallicShininess ("_kMetallicShininess", FLOAT) = 1
+		_kMetallicShininess ("_kMetallicShininess", Range(0,3)) = 1
 
-		_gkVehicleExposure ("_gkVehicleExposure", FLOAT) = 1
+		_gkVehicleExposure ("_gkVehicleExposure",Range(0,1)) = 1
 		_kDiffuseTint ("_kDiffuseTint", Color) = (1,1,1,1)
 		_kMetallicTint ("_kMetallicTint", Color) = (1,1,1,1)
 
@@ -230,9 +230,12 @@
 
     float3 CarColor =  IBL.xyz * _kDiffuseTint;
 
-    float vv =  nfe + _kClearCoatF0;
 
-    float3 FIBL =  CarColor * vv + ( CarColor * (-ClearCoatShininess) + 1.0 + ( vv * _kMetallicCoverage * _kMetallicBoost  ) * CarColor * kAliasDimming);
+
+    float vv =  nfe + _kClearCoatF0 ;
+
+    float3 FIBL =  CarColor * vv + ( CarColor * (ClearCoatShininess)  + ( _kMetallicCoverage * _kMetallicBoost   ) * CarColor * kAliasDimming);
+   //     return float4 (FIBL,1);
      //u_xlat3.xyz = DiffuseIBLColor.xyz * ( ClearCoatShininess + _kClearCoatF0) ;
     float3 AuxTex_Var =  tex2D(_AuxTex1, uv);
    // u_xlat10_4.xyz = tex2D(_AuxTex1, uv).xyz;
@@ -287,7 +290,7 @@
 			//float3 splpower = ssd * spl.xyz *_kMetallicTint;
    float3 splpower =  spl.xyz * _kMetallicTint ;
 
-			splpower = -ClearCoatShininess * splpower;
+			splpower = ClearCoatShininess * splpower;
 
 
 			//u_xlat0.x = (-u_xlat0.x) + 1.0;
@@ -301,8 +304,8 @@
 			u_xlat0.xyz = finaldiffuse* nfe + Fresnel;
 
 //return float4(Fresnel,1);
-			//u_xlat0.xyz = (-FIBL) + u_xlat0.xyz;
-
+			u_xlat0.xyz = (-FIBL) + u_xlat0.xyz;
+             
 
 			u_xlat0.xyz = (AuxTex_Var.z * VertexColor.g) * u_xlat0.xyz + FIBL;
 
