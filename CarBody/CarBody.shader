@@ -8,12 +8,12 @@
 		_SpecAmbientMap ("_SpecAmbientMap", CUBE) = "sky" {}
 		_gkAliasDimming ("_gkAliasDimming", Range(0,1)) = 1
 
-		_kMetallicCoverage ("_kMetallicCoverage", Range(0,1)) = 1
+		//_kMetallicCoverage ("_kMetallicCoverage", Range(0,1)) = 1
 
 		_kClearCoatF0 ("_kClearCoatF0", Range(1,1)) = 1
 		_kClearCoatShininess ("_kClearCoatShininess", FLOAT) = 1
 		_kFresnelPower ("_kFresnelPower", Range(0,3)) = 1
-		_kMetallicBoost ("_kMetallicBoost",Range(0,1)) = 1
+		//_kMetallicBoost ("_kMetallicBoost",Range(0,1)) = 1
 		_kLiveryUVScale ("_kLiveryUVScale", FLOAT) = 1
 		_kMetallicShininess ("_kMetallicShininess", Range(0,3)) = 1
 
@@ -37,7 +37,7 @@
 			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
-			#include  "../CGIncludes/RolantinCG.cginc"
+			//#include  "../CGIncludes/RolantinCG.cginc"
 
 			struct appdata
 			{
@@ -169,6 +169,8 @@
 
     float4 SBL = texCUBElod(_SpecAmbientMap,float4 (viewdirx.xyz, _kMetallicShininess * 6));
 
+
+
     u_xlat10_5 = texCUBElod(_SpecAmbientMap,float4(viewdirx.xyz, u_xlat15.x)) ;
 
     float nfe = log2(dot(normalx, viewdirx));
@@ -234,7 +236,8 @@
 
     float vv =  nfe + _kClearCoatF0 ;
 
-    float3 FIBL =  CarColor * vv + ( CarColor * (ClearCoatShininess)  + ( _kMetallicCoverage * _kMetallicBoost   ) * CarColor * kAliasDimming);
+    float3 FIBL =  ClearCoatShininess *  CarColor * vv      * kAliasDimming;
+
    //     return float4 (FIBL,1);
      //u_xlat3.xyz = DiffuseIBLColor.xyz * ( ClearCoatShininess + _kClearCoatF0) ;
     float3 AuxTex_Var =  tex2D(_AuxTex1, uv);
@@ -243,6 +246,8 @@
    // u_xlat16_22 = (-AuxTex_Var.y+1) * 6.0;
    // u_xlat8 = max(IBLw, ((-AuxTex_Var.y+1) * 6.0));
    float4 spl = texCUBElod(_SpecAmbientMap , float4(viewdirx.xyz,  AuxTex_Var.y *_kMetallicShininess * 6 )) ;
+
+
 
    // u_xlat8 = u_xlat0.x * -5.55472994 + -6.98316002;
 
@@ -306,7 +311,7 @@
 //return float4(Fresnel,1);
 			u_xlat0.xyz = (-FIBL) + u_xlat0.xyz;
              
-
+  
 			u_xlat0.xyz = (AuxTex_Var.z * VertexColor.g) * u_xlat0.xyz + FIBL;
 
 			float v_colorR = VertexColor.r * _gkVehicleExposure;
