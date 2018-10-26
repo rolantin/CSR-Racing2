@@ -11,6 +11,8 @@ ModelImporter:
     100008: //RootNode
     100010: JEEP_BODY
     100012: side_object
+    100014: Camera
+    100016: Directional Light
     400000: back_lhs_wheel1
     400002: back_rhs_wheel1
     400004: front_lhs_wheel1
@@ -18,6 +20,8 @@ ModelImporter:
     400008: //RootNode
     400010: JEEP_BODY
     400012: side_object
+    400014: Camera
+    400016: Directional Light
     2300000: back_lhs_wheel1
     2300002: back_rhs_wheel1
     2300004: front_lhs_wheel1
@@ -36,8 +40,14 @@ ModelImporter:
     4300006: back_rhs_wheel1
     4300008: side_object
     4300010: JEEP_BODY
+    7400000: Take 001
     9500000: //RootNode
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: jeepmaterial
+    second: {fileID: 2100000, guid: c2a89d7fc067a5b4c95aa7b99250a7b1, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -80,6 +90,8 @@ ModelImporter:
     optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
