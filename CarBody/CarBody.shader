@@ -126,11 +126,6 @@
 				float u_xlat16_22;
 				float finalr3;
 
-				
-				
-
-
-
 				//viewdir.x = dot(viewDir, viewDir);
 				//viewdir.x = rsqrt(viewdir.x);
 				//viewdir.xyz = viewdir.x * viewDir;

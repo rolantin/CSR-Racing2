@@ -112,13 +112,18 @@
 			
 				u_xlat0.x = dot(ViewDirection.xyz, ViewDirection.xyz);
 				u_xlat0.x = rsqrt(u_xlat0.x);
+
 			    u_xlat0.xyz = u_xlat0.x * ViewDirection.xyz;
 
 ///normal dir
 
 			    float NorDir = dot(normaldir, normaldir);
 			    NorDir = rsqrt(NorDir);
-			    float3 u_xlat1 = NorDir.x* normaldir.xyz;
+			    float3 u_xlat1 = NorDir.xxx* normaldir.xyz;
+
+
+
+			    
 			    NorDir = dot(u_xlat1.xyz, u_xlat0.xyz);
 
 
@@ -151,7 +156,9 @@
 			#endif
 			    u_xlat8 = (-u_xlat2) * 1.33333302 + 1.0;
 			    u_xlat2 = u_xlat2 * 1.33333302;
+
 			  float  u_xlat20 = dot((-u_xlat0.xyz), u_xlat1.xyz);
+
 			    u_xlat20 = u_xlat20 + u_xlat20;
 
 
